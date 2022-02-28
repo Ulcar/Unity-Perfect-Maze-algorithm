@@ -32,20 +32,34 @@ public class RecursiveBacktracker : MonoBehaviour
 
     public delegate MazeNode GetRandomCell(List<MazeNode> nodes);
 
+    public GetRandomCell NodeChooser;
+
     private MazeDrawer mazeDrawer;
 
+    private System.Random randomInstance;
     void Start()
     {
         mazeNodes = new MazeNode[mazeXSize, mazeYSize];
         mazeDrawer = GetComponent<MazeDrawer>();
+        NodeChooser = ChooseRandomCellFromList;
        // RunGeneration();
     }
 
 
-    private MazeNode ChooseRandomCellFromList(List<MazeNode> nodes) 
+    private MazeNode ChooseLastCellFromList(List<MazeNode> nodes) 
     {
         // choose newest from list
         return nodes[nodes.Count - 1];
+    }
+
+    private MazeNode ChooseRandomCellFromList(List<MazeNode> nodes) 
+    {
+        return nodes[randomInstance.Next(0, nodes.Count - 1)];
+    }
+
+    private MazeNode ChooseFirstCellFromList(List<MazeNode> nodes) 
+    {
+        return nodes[0];
     }
 
     private void GenerateNodeData() 
@@ -80,6 +94,7 @@ public class RecursiveBacktracker : MonoBehaviour
 
                 // add new node to growing tree
                 VisitedNodes.Add(newNode);
+                newNode.visited = true;
                 return true;
             }
         }
@@ -104,6 +119,7 @@ public class RecursiveBacktracker : MonoBehaviour
 
                 // add new node to growing tree
                 VisitedNodes.Add(newNode);
+                newNode.visited = true;
                 return true;
             }
         }
@@ -126,6 +142,7 @@ public class RecursiveBacktracker : MonoBehaviour
 
                 // add new node to growing tree
                 VisitedNodes.Add(newNode);
+                newNode.visited = true;
                 return true;
             }
         }
@@ -147,6 +164,7 @@ public class RecursiveBacktracker : MonoBehaviour
                 mazeDrawer.RemoveWall(newNode.savedX, newNode.savedY, Directions.East);
                 // add new node to growing tree
                 VisitedNodes.Add(newNode);
+                newNode.visited = true;
                 return true;
             }
         }
@@ -159,7 +177,7 @@ public class RecursiveBacktracker : MonoBehaviour
 
         VisitedNodes = new List<MazeNode>();
 
-        System.Random randomInstance = new System.Random(seed);
+        randomInstance = new System.Random(seed);
 
 
         // add random starting cell
@@ -181,14 +199,13 @@ public class RecursiveBacktracker : MonoBehaviour
             }
 
             // choose cell based on selection Function
-            MazeNode currentNode = ChooseRandomCellFromList(VisitedNodes);
-            currentNode.visited = true;
+            MazeNode currentNode = NodeChooser(VisitedNodes);
 
-            Func<MazeNode, bool>[] randomDirectionFunction = { CheckNorth, CheckSouth, CheckEast, CheckWest };
+           List< Func<MazeNode, bool> > randomDirectionFunction = new List<Func<MazeNode, bool>>(){ CheckNorth, CheckSouth, CheckEast, CheckWest };
             bool found = false;
             for (int i = 0; i < 4; i++) 
             {
-               int direction =  randomInstance.Next(0, randomDirectionFunction.Length - 1);
+               int direction =  randomInstance.Next(0, randomDirectionFunction.Count - 1);
 
                 if (randomDirectionFunction[direction](currentNode)) 
                 {
@@ -197,7 +214,7 @@ public class RecursiveBacktracker : MonoBehaviour
                 }
                 //If not possible to go to direction, try again and remove direction from possible chosen directions
                 //FIXME: Possible small bias here (direction + 1 has a higher chance of appearing after this)
-                randomDirectionFunction[direction] = randomDirectionFunction[(direction + 1) % 4];
+                randomDirectionFunction.RemoveAt(direction);
             }
 
 

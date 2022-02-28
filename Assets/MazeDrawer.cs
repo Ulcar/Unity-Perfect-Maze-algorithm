@@ -6,90 +6,200 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-   public class MazeDrawer:MonoBehaviour
-    {
+public class MazeDrawer : MonoBehaviour
+{
 
 
-    public GameObject[,,] wallArray;
+
+    public GameObject wallPrefab;
 
     public RecursiveBacktracker recursiveBacktracker;
+
+    private bool MazeNeedsUpdate = false;
+    private int population = 0;
+
+    private int sideWallCount = 0;
+    // Material to use for drawing the meshes.
+    public Material material;
+
+    private Matrix4x4[][] matrices;
+
+    private Matrix4x4[] sideWallMatrices;
+    private MaterialPropertyBlock block;
+
+    public Mesh mesh;
+
+    Vector3 VerticalScale = new Vector3(1.5f, 1, 0.5f);
+    Vector3 HorizontalScale = new Vector3(0.5f, 1, 1.5f);
+
+    private ComputeBuffer meshPropertiesBuffer;
+    private ComputeBuffer argsBuffer;
+
+
+    private struct MeshProperties
+    {
+        public Matrix4x4 mat;
+        public Vector4 color;
+
+        public static int Size()
+        {
+            return
+                sizeof(float) * 4 * 4 + // matrix;
+                sizeof(float) * 4;      // color;
+        }
+    }
+
 
     private void Start()
     {
         recursiveBacktracker = GetComponent<RecursiveBacktracker>();
-        wallArray = new GameObject[recursiveBacktracker.mazeXSize, recursiveBacktracker.mazeYSize, 4];
+        matrices = new Matrix4x4[((recursiveBacktracker.mazeXSize * recursiveBacktracker.mazeYSize * 4) / 1023) + 1][];
+        sideWallMatrices = new Matrix4x4[recursiveBacktracker.mazeXSize + recursiveBacktracker.mazeYSize];
+        for (int i = 0; i < matrices.Length; i++)
+        {
+            matrices[i] = new Matrix4x4[1023];
+        }
+
+
 
         StartCoroutine(SpawnAllWalls());
     }
 
-    public void RemoveWall(int x, int y, Directions direction) 
+    private void Update()
     {
-        if (direction == Directions.North)
+
+
+
+        int currentRenderPos = 0;
+
+        int currentRenderCount = population;
+        // possible Performance improvement: Using custom shaders and DrawMeshInstancedIndirect for bigger batches at once (Current limit is 1023 meshes)
+        // Could also try creating walls as one mesh instead
+        while (currentRenderCount > 1023)
         {
-            wallArray[x, y, 0].SetActive(false);
+            Graphics.DrawMeshInstanced(mesh, 0, material, matrices[currentRenderPos], 1023, block);
+            currentRenderCount -= 1023;
+            currentRenderPos += 1;
         }
-        else if (direction == Directions.South)
+        Graphics.DrawMeshInstanced(mesh, 0, material, matrices[currentRenderPos], currentRenderCount, block);
+
+        Graphics.DrawMeshInstanced(mesh, 0, material, sideWallMatrices, sideWallCount, block);
+
+
+
+    }
+    public void RemoveWall(int x, int y, Directions direction)
+    {
+        var mat = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.zero);
+
+
+        // find wall in one dimensional array
+        int index = y;
+
+        index += x * recursiveBacktracker.mazeYSize;
+
+        index *= 2;
+
+        // each X adds +1, each Y adds +1
+
+
+        if (direction == Directions.South)
         {
-            wallArray[x, y, 1].SetActive(false);
         }
         else if (direction == Directions.East)
         {
-            wallArray[x, y, 2].SetActive(false);
+            index += 1;
         }
 
-        else
+        else if (direction == Directions.West)
         {
-            wallArray[x, y, 3].SetActive(false);
         }
+        int instanceIndex = index / 1023;
+
+        matrices[instanceIndex][index % 1023] = mat;
     }
 
 
     IEnumerator SpawnAllWalls() //Creates maze with borders as cubes
+    {
+
+
+
+        for (int x = 0; x < recursiveBacktracker.mazeXSize; x++)
         {
-            GameObject VerticalBorder = GameObject.CreatePrimitive(PrimitiveType.Cube);  //vertically scaled cube for up and down borders
-            VerticalBorder.transform.localScale = new Vector3(1.5f, 1, 0.5f);
-
-            GameObject HorizontalBorder = GameObject.CreatePrimitive(PrimitiveType.Cube);//horizontally scaled cube for left and right borders
-            HorizontalBorder.transform.localScale = new Vector3(0.5f, 1, 1.5f);
-
-            for (int x = 0; x < recursiveBacktracker.mazeXSize; x++)
+            for (int y = 0; y < recursiveBacktracker.mazeYSize; y++)
             {
-                for (int y = 0; y < recursiveBacktracker.mazeYSize; y++)
-                {
 
-                        PlaceVerticalBorder(VerticalBorder, x, y, Directions.North);
+                PlaceWall(x, y, Directions.North, population);
+                population++;
+                PlaceWall(x, y, Directions.East, population);
+                population++;
                 //side walls
                 if (y == 0)
-                {
-                    PlaceVerticalBorder(VerticalBorder, x, y, Directions.South);
-                }
-                        PlaceHorizontalBorder(HorizontalBorder, x, y, Directions.East);
-                if (x == 0)
-                {
-                    PlaceHorizontalBorder(HorizontalBorder, x, y, Directions.West);
-                }
-                }
-                // return each row
-            yield return null;
-        }
-            GameObject.Destroy(VerticalBorder); //destroy source objects
-            GameObject.Destroy(HorizontalBorder);
+                  {
+                       PlaceBottomWall(x, y, Directions.South);
+                  } 
+
+                  if (x == 0)
+                  {
+                      PlaceBottomWall(x, y, Directions.West);
+                  } 
+            }
             yield return null;
         }
 
-        void PlaceHorizontalBorder(GameObject border, int x, int y, Directions d) //borders are put moved away from the point to suround it
-        {                                                   //upper border moved up, and lower border moved down along x axis
-            GameObject tmp = Instantiate(border, new Vector3(x, 0, y) + Vector3.right * 0.5f * ((d == Directions.East) ? 1 : -1), Quaternion.identity);
-            tmp.name = "X = " + x + " Y: " + y + "Direction: " + d.ToString();
-        int pos = ((d == Directions.East) ? 2 : 3);
-        wallArray[x, y, pos] = tmp;
+        yield return null;
     }
 
-        void PlaceVerticalBorder(GameObject border, int x, int y,  Directions d)
-        {                                                   //left border moved left, and right border moved right along z axis
-            GameObject tmp = Instantiate(border, new Vector3(x, 0, y) + Vector3.forward * 0.5f * ((d == Directions.North) ? 1 : -1), Quaternion.identity);
-            tmp.name = "X = " + x + " Y: " + y + "Direction: " + d.ToString();
-        int pos = ((d == Directions.North) ? 0 : 1);
-        wallArray[x, y, pos] = tmp;
+
+    void PlaceBottomWall(int x, int y, Directions d)
+    {
+        Vector3 direction = (d == Directions.West) ? Vector3.right : Vector3.forward;
+        Vector3 position = new Vector3(x, 0, y) + direction * 0.5f * -1;
+
+
+        Vector3 scale = (d == Directions.West) ? HorizontalScale : VerticalScale;
+
+        var mat = Matrix4x4.TRS(position, Quaternion.identity, scale);
+
+
+        int index = y;
+
+        if (y == 0) 
+        {
+            index = recursiveBacktracker.mazeYSize + x;
+        }
+
+        if (x == 0 && y == 0) 
+        {
+            index = 0;
+        }
+
+
+        if (d == Directions.West)
+        {
+            index += 1;
+        }
+
+        sideWallMatrices[index] = mat;
+        sideWallCount++;
     }
+
+
+    void PlaceWall(int x, int y, Directions d, int index) 
+    {                                                   
+
+        Vector3 direction = (d == Directions.East) ? Vector3.right : Vector3.forward;
+        Vector3 position = new Vector3(x, 0, y) + direction * 0.5f * 1;
+
+        Vector3 scale = (d == Directions.East) ? HorizontalScale: VerticalScale;
+
+        var mat = Matrix4x4.TRS(position, Quaternion.identity, scale);
+
+        int instanceIndex = index / 1023;
+
+        matrices[instanceIndex][index % 1023] = mat;
     }
+
+
+}
