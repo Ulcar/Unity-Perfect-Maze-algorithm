@@ -155,7 +155,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mazeXSize: 250
   mazeYSize: 250
-  seed: 1
+  seed: 1178
   StepsPerFrame: 10
   generationFinished: 0
 --- !u!114 &653905616
@@ -223,7 +223,7 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 2
+    m_Type: 0
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
