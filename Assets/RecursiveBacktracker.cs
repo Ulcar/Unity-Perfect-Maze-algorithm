@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class RecursiveBacktracker : MonoBehaviour
 {
-    // Start is called before the first frame update
-
 
     private MazeNode[,] mazeNodes;
 
@@ -79,37 +77,9 @@ public class RecursiveBacktracker : MonoBehaviour
             // choose cell based on selection Function
             MazeNode currentNode = ChooseRandomCellFromList(VisitedNodes);
             currentNode.visited = true;
-            Debug.Log("Current cell: X: " + currentNode.savedX + " Y: " + currentNode.savedY);
-            if (currentNode.savedX < mazeXSize - 1) 
-=            {
-                MazeNode newNode = mazeNodes[currentNode.savedX + 1, currentNode.savedY];
-                if (!newNode.visited) 
-                {
-                    // remove wall on both nodes
-                    currentNode.Walls &= (int)~Directions.East;
-                    newNode.Walls &= (int)~Directions.West;
 
-                    // add new node to growing tree
-                    VisitedNodes.Add(newNode);
-                    continue;
-                }
-            }
-
-            if (currentNode.savedX > 0) 
-            {
-                MazeNode newNode = mazeNodes[currentNode.savedX - 1, currentNode.savedY];
-                if (!newNode.visited)
-                {
-                    // remove wall on both nodes
-                    currentNode.Walls &= (int)~Directions.West;
-                    newNode.Walls &= (int)~Directions.East;
-
-                    // add new node to growing tree
-                    VisitedNodes.Add(newNode);
-                    continue;
-                }
-            }
-
+          
+            //TODO: Fix direction bias of generation
             if (currentNode.savedY < mazeYSize - 1) 
             {
                 MazeNode newNode = mazeNodes[currentNode.savedX, currentNode.savedY + 1];
@@ -140,8 +110,37 @@ public class RecursiveBacktracker : MonoBehaviour
                 }
             }
 
+            if (currentNode.savedX < mazeXSize - 1)
+            {
+                MazeNode newNode = mazeNodes[currentNode.savedX + 1, currentNode.savedY];
+                if (!newNode.visited)
+                {
+                    // remove wall on both nodes
+                    currentNode.Walls &= (int)~Directions.East;
+                    newNode.Walls &= (int)~Directions.West;
+
+                    // add new node to growing tree
+                    VisitedNodes.Add(newNode);
+                    continue;
+                }
+            }
+            if (currentNode.savedX > 0)
+            {
+                MazeNode newNode = mazeNodes[currentNode.savedX - 1, currentNode.savedY];
+                if (!newNode.visited)
+                {
+                    // remove wall on both nodes
+                    currentNode.Walls &= (int)~Directions.West;
+                    newNode.Walls &= (int)~Directions.East;
+
+                    // add new node to growing tree
+                    VisitedNodes.Add(newNode);
+                    continue;
+                }
+            }
+
             // no nodes found, removing current node and counting visited as true
-=            VisitedNodes.Remove(currentNode);
+            VisitedNodes.Remove(currentNode);
 
 
         }
@@ -186,11 +185,11 @@ public class RecursiveBacktracker : MonoBehaviour
             {
                 if ((mazeNodes[x,y].Walls & (int)Directions.North) > 0)
                 {
-                    PlaceVerticalBorder(HorizontalBorder, mazeNodes[x,y], Directions.North);
+                    PlaceVerticalBorder(VerticalBorder, mazeNodes[x,y], Directions.North);
                 }
                 if ((mazeNodes[x, y].Walls & (int)Directions.South) > 0)
                 {
-                    PlaceVerticalBorder(HorizontalBorder, mazeNodes[x, y], Directions.South);
+                    PlaceVerticalBorder(VerticalBorder, mazeNodes[x, y], Directions.South);
                 }
 
                 if ((mazeNodes[x, y].Walls & (int)Directions.East) > 0)
@@ -211,11 +210,13 @@ public class RecursiveBacktracker : MonoBehaviour
 
     void PlaceHorizontalBorder(GameObject border, MazeNode c, Directions d) //borders are put moved away from the point to suround it
     {                                                   //upper border moved up, and lower border moved down along x axis
-        Instantiate(border, new Vector3(c.savedX, 0, c.savedY) + Vector3.right * 0.5f * ((d == Directions.East) ? 1 : -1), Quaternion.identity);
+       GameObject tmp =  Instantiate(border, new Vector3(c.savedX, 0, c.savedY) + Vector3.right * 0.5f * ((d == Directions.East) ? 1 : -1), Quaternion.identity);
+        tmp.name = "X = " + c.savedX + " Y: " + c.savedY + "Direction: " + d.ToString();
     }
 
     void PlaceVerticalBorder(GameObject border, MazeNode c, Directions d)
     {                                                   //left border moved left, and right border moved right along z axis
-        Instantiate(border, new Vector3(c.savedX, 0, c.savedY) + Vector3.forward * 0.5f * ((d == Directions.North) ? 1 : -1), Quaternion.identity);
+       GameObject tmp =  Instantiate(border, new Vector3(c.savedX, 0, c.savedY) + Vector3.forward * 0.5f * ((d == Directions.North) ? 1 : -1), Quaternion.identity);
+        tmp.name = "X = " + c.savedX + " Y: " + c.savedY + "Direction: " + d.ToString();
     }
 }
