@@ -58,12 +58,20 @@ using UnityEngine;
                 {
 
                         PlaceVerticalBorder(VerticalBorder, x, y, Directions.North);
-                        PlaceVerticalBorder(VerticalBorder, x, y, Directions.South);
-                        PlaceHorizontalBorder(HorizontalBorder, x, y, Directions.East);
-                        PlaceHorizontalBorder(HorizontalBorder, x, y, Directions.West);
-                    yield return null;
+                //side walls
+                if (y == 0)
+                {
+                    PlaceVerticalBorder(VerticalBorder, x, y, Directions.South);
                 }
-            }
+                        PlaceHorizontalBorder(HorizontalBorder, x, y, Directions.East);
+                if (x == 0)
+                {
+                    PlaceHorizontalBorder(HorizontalBorder, x, y, Directions.West);
+                }
+                }
+                // return each row
+            yield return null;
+        }
             GameObject.Destroy(VerticalBorder); //destroy source objects
             GameObject.Destroy(HorizontalBorder);
             yield return null;
