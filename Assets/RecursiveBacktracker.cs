@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -54,6 +55,89 @@ public class RecursiveBacktracker : MonoBehaviour
         }
     }
 
+
+    private bool CheckNorth(MazeNode currentNode) 
+    {
+        if (currentNode.savedY < mazeYSize - 1)
+        {
+            MazeNode newNode = mazeNodes[currentNode.savedX, currentNode.savedY + 1];
+            if (!newNode.visited)
+            {
+                // remove wall on both nodes
+                currentNode.Walls &= (int)~Directions.North;
+                newNode.Walls &= (int)~Directions.South;
+
+                // add new node to growing tree
+                VisitedNodes.Add(newNode);
+                return true;
+            }
+        }
+
+        return false;
+
+    }
+
+
+    private bool CheckSouth(MazeNode currentNode) 
+    {
+        if (currentNode.savedY > 0)
+        {
+            MazeNode newNode = mazeNodes[currentNode.savedX, currentNode.savedY - 1];
+            if (!newNode.visited)
+            {
+                // remove wall on both nodes
+                currentNode.Walls &= (int)~Directions.South;
+                newNode.Walls &= (int)~Directions.North;
+
+                // add new node to growing tree
+                VisitedNodes.Add(newNode);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool CheckEast(MazeNode currentNode) 
+    {
+        if (currentNode.savedX < mazeXSize - 1)
+        {
+            MazeNode newNode = mazeNodes[currentNode.savedX + 1, currentNode.savedY];
+            if (!newNode.visited)
+            {
+                // remove wall on both nodes
+                currentNode.Walls &= (int)~Directions.East;
+                newNode.Walls &= (int)~Directions.West;
+
+                // add new node to growing tree
+                VisitedNodes.Add(newNode);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool CheckWest(MazeNode currentNode) 
+    {
+        if (currentNode.savedX > 0)
+        {
+            MazeNode newNode = mazeNodes[currentNode.savedX - 1, currentNode.savedY];
+            if (!newNode.visited)
+            {
+                // remove wall on both nodes
+                currentNode.Walls &= (int)~Directions.West;
+                newNode.Walls &= (int)~Directions.East;
+
+                // add new node to growing tree
+                VisitedNodes.Add(newNode);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private IEnumerator GrowingTree(int seed) 
     {
 
@@ -78,70 +162,30 @@ public class RecursiveBacktracker : MonoBehaviour
             MazeNode currentNode = ChooseRandomCellFromList(VisitedNodes);
             currentNode.visited = true;
 
-          
-            //TODO: Fix direction bias of generation
-            if (currentNode.savedY < mazeYSize - 1) 
+            Func<MazeNode, bool>[] randomDirectionFunction = { CheckNorth, CheckSouth, CheckEast, CheckWest };
+            bool found = false;
+            for (int i = 0; i < 4; i++) 
             {
-                MazeNode newNode = mazeNodes[currentNode.savedX, currentNode.savedY + 1];
-                if (!newNode.visited)
-                {
-                    // remove wall on both nodes
-                    currentNode.Walls &= (int)~Directions.North;
-                    newNode.Walls &= (int)~Directions.South;
+               int direction =  randomInstance.Next(0, randomDirectionFunction.Length - 1);
 
-                    // add new node to growing tree
-                    VisitedNodes.Add(newNode);
-                    continue;
+                if (randomDirectionFunction[direction](currentNode)) 
+                {
+                    found = true;
+                    break;
                 }
+                //If not possible to go to direction, try again and remove direction from possible chosen directions
+                //FIXME: Possible small bias here (direction + 1 has a higher chance of appearing after this)
+                randomDirectionFunction[direction] = randomDirectionFunction[(direction + 1) % 4];
             }
 
-            if (currentNode.savedY > 0) 
-            {
-                MazeNode newNode = mazeNodes[currentNode.savedX, currentNode.savedY - 1];
-                if (!newNode.visited)
-                {
-                    // remove wall on both nodes
-                    currentNode.Walls &= (int)~Directions.South;
-                    newNode.Walls &= (int)~Directions.North;
 
-                    // add new node to growing tree
-                    VisitedNodes.Add(newNode);
-                    continue;
-                }
-            }
 
-            if (currentNode.savedX < mazeXSize - 1)
-            {
-                MazeNode newNode = mazeNodes[currentNode.savedX + 1, currentNode.savedY];
-                if (!newNode.visited)
-                {
-                    // remove wall on both nodes
-                    currentNode.Walls &= (int)~Directions.East;
-                    newNode.Walls &= (int)~Directions.West;
-
-                    // add new node to growing tree
-                    VisitedNodes.Add(newNode);
-                    continue;
-                }
-            }
-            if (currentNode.savedX > 0)
-            {
-                MazeNode newNode = mazeNodes[currentNode.savedX - 1, currentNode.savedY];
-                if (!newNode.visited)
-                {
-                    // remove wall on both nodes
-                    currentNode.Walls &= (int)~Directions.West;
-                    newNode.Walls &= (int)~Directions.East;
-
-                    // add new node to growing tree
-                    VisitedNodes.Add(newNode);
-                    continue;
-                }
-            }
 
             // no nodes found, removing current node and counting visited as true
-            VisitedNodes.Remove(currentNode);
-
+            if (!found)
+            {
+                VisitedNodes.Remove(currentNode);
+            }
 
         }
 
