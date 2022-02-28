@@ -20,6 +20,10 @@ public class RecursiveBacktracker : MonoBehaviour
     [SerializeField]
     private int seed;
 
+    [SerializeField]
+    private int StepsPerFrame = 5;
+
+    private int currentSteps = 0;
 
     [SerializeField]
     private bool generationFinished;
@@ -72,7 +76,7 @@ public class RecursiveBacktracker : MonoBehaviour
                 currentNode.Walls &= (int)~Directions.North;
                 mazeDrawer.RemoveWall(currentNode.savedX, currentNode.savedY, Directions.North);
                 newNode.Walls &= (int)~Directions.South;
-                mazeDrawer.RemoveWall(newNode.savedX, newNode.savedY, Directions.South);
+             //   mazeDrawer.RemoveWall(newNode.savedX, newNode.savedY, Directions.South);
 
                 // add new node to growing tree
                 VisitedNodes.Add(newNode);
@@ -94,7 +98,7 @@ public class RecursiveBacktracker : MonoBehaviour
             {
                 // remove wall on both nodes
                 currentNode.Walls &= (int)~Directions.South;
-                mazeDrawer.RemoveWall(currentNode.savedX, currentNode.savedY, Directions.South);
+             //   mazeDrawer.RemoveWall(currentNode.savedX, currentNode.savedY, Directions.South);
                 newNode.Walls &= (int)~Directions.North;
                 mazeDrawer.RemoveWall(newNode.savedX, newNode.savedY, Directions.North);
 
@@ -118,7 +122,7 @@ public class RecursiveBacktracker : MonoBehaviour
                 currentNode.Walls &= (int)~Directions.East;
                 mazeDrawer.RemoveWall(currentNode.savedX, currentNode.savedY, Directions.East);
                 newNode.Walls &= (int)~Directions.West;
-                mazeDrawer.RemoveWall(newNode.savedX, newNode.savedY, Directions.West);
+           //     mazeDrawer.RemoveWall(newNode.savedX, newNode.savedY, Directions.West);
 
                 // add new node to growing tree
                 VisitedNodes.Add(newNode);
@@ -138,7 +142,7 @@ public class RecursiveBacktracker : MonoBehaviour
             {
                 // remove wall on both nodes
                 currentNode.Walls &= (int)~Directions.West;
-                mazeDrawer.RemoveWall(currentNode.savedX, currentNode.savedY, Directions.West);
+           //     mazeDrawer.RemoveWall(currentNode.savedX, currentNode.savedY, Directions.West);
                 newNode.Walls &= (int)~Directions.East;
                 mazeDrawer.RemoveWall(newNode.savedX, newNode.savedY, Directions.East);
                 // add new node to growing tree
@@ -169,7 +173,13 @@ public class RecursiveBacktracker : MonoBehaviour
 
         while (VisitedNodes.Count > 0) 
         {
-            yield return null;
+            currentSteps++;
+            if (currentSteps >= StepsPerFrame)
+            {
+                currentSteps = 0;
+                yield return null;
+            }
+
             // choose cell based on selection Function
             MazeNode currentNode = ChooseRandomCellFromList(VisitedNodes);
             currentNode.visited = true;
@@ -202,8 +212,7 @@ public class RecursiveBacktracker : MonoBehaviour
 
         generationFinished = true;
 
-        
-        yield return null;
+    
     }
 
 
