@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(MazeDrawer))]
 public class RecursiveBacktracker : MonoBehaviour
 {
 
@@ -10,9 +11,9 @@ public class RecursiveBacktracker : MonoBehaviour
 
 
     [SerializeField]
-    private int mazeXSize, mazeYSize;
+    public int mazeXSize, mazeYSize;
 
-
+    //TODO: Change to Array with seperate size parameter so the algorithm can be used in c# jobs
     private List<MazeNode> VisitedNodes;
 
 
@@ -25,11 +26,15 @@ public class RecursiveBacktracker : MonoBehaviour
 
     private bool drawingStarted;
 
+    public delegate MazeNode GetRandomCell(List<MazeNode> nodes);
+
+    private MazeDrawer mazeDrawer;
+
     void Start()
     {
         mazeNodes = new MazeNode[mazeXSize, mazeYSize];
-
-        RunGeneration();
+        mazeDrawer = GetComponent<MazeDrawer>();
+       // RunGeneration();
     }
 
 
@@ -65,7 +70,9 @@ public class RecursiveBacktracker : MonoBehaviour
             {
                 // remove wall on both nodes
                 currentNode.Walls &= (int)~Directions.North;
+                mazeDrawer.RemoveWall(currentNode.savedX, currentNode.savedY, Directions.North);
                 newNode.Walls &= (int)~Directions.South;
+                mazeDrawer.RemoveWall(newNode.savedX, newNode.savedY, Directions.South);
 
                 // add new node to growing tree
                 VisitedNodes.Add(newNode);
@@ -87,7 +94,9 @@ public class RecursiveBacktracker : MonoBehaviour
             {
                 // remove wall on both nodes
                 currentNode.Walls &= (int)~Directions.South;
+                mazeDrawer.RemoveWall(currentNode.savedX, currentNode.savedY, Directions.South);
                 newNode.Walls &= (int)~Directions.North;
+                mazeDrawer.RemoveWall(newNode.savedX, newNode.savedY, Directions.North);
 
                 // add new node to growing tree
                 VisitedNodes.Add(newNode);
@@ -107,7 +116,9 @@ public class RecursiveBacktracker : MonoBehaviour
             {
                 // remove wall on both nodes
                 currentNode.Walls &= (int)~Directions.East;
+                mazeDrawer.RemoveWall(currentNode.savedX, currentNode.savedY, Directions.East);
                 newNode.Walls &= (int)~Directions.West;
+                mazeDrawer.RemoveWall(newNode.savedX, newNode.savedY, Directions.West);
 
                 // add new node to growing tree
                 VisitedNodes.Add(newNode);
@@ -127,8 +138,9 @@ public class RecursiveBacktracker : MonoBehaviour
             {
                 // remove wall on both nodes
                 currentNode.Walls &= (int)~Directions.West;
+                mazeDrawer.RemoveWall(currentNode.savedX, currentNode.savedY, Directions.West);
                 newNode.Walls &= (int)~Directions.East;
-
+                mazeDrawer.RemoveWall(newNode.savedX, newNode.savedY, Directions.East);
                 // add new node to growing tree
                 VisitedNodes.Add(newNode);
                 return true;
@@ -182,10 +194,9 @@ public class RecursiveBacktracker : MonoBehaviour
 
 
             // no nodes found, removing current node and counting visited as true
-            if (!found)
-            {
-                VisitedNodes.Remove(currentNode);
-            }
+            if (!found) { 
+            VisitedNodes.Remove(currentNode);
+                }
 
         }
 
@@ -202,7 +213,11 @@ public class RecursiveBacktracker : MonoBehaviour
         if (generationFinished && !drawingStarted) 
         {
             drawingStarted = true;
-            StartCoroutine(ShowMaze());
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space)) 
+        {
+            RunGeneration();
         }
     }
 
