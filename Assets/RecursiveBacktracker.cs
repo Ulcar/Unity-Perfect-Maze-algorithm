@@ -62,6 +62,11 @@ public class RecursiveBacktracker : MonoBehaviour
         return nodes[0];
     }
 
+    private MazeNode ChooseMiddleCellFromList(List<MazeNode> nodes) 
+    {
+        return nodes[nodes.Count / 2];
+    }
+
     private void GenerateNodeData() 
     {
         for (int x = 0; x < mazeXSize; x++) 
