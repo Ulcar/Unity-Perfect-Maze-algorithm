@@ -246,8 +246,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36ea338156c02324fa3822189402dd98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wallPrefab: {fileID: 8006586101463700759, guid: 20fd4c534e251564eadc44c455053ec7, type: 3}
-  recursiveBacktracker: {fileID: 653905615}
+  WallPrefab: {fileID: 0}
+  RecursiveBacktracker: {fileID: 653905615}
   material: {fileID: 2100000, guid: 470d0f54baa9fad458cef827d1412d92, type: 2}
   mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &83083471
@@ -1994,7 +1994,7 @@ MonoBehaviour:
   savedXSize: 100
   savedYSize: 100
   seed: 246
-  StepsPerFrame: 10
+  stepsPerFrame: 5
   generationFinished: 0
 --- !u!4 &653905619
 Transform:
@@ -2055,8 +2055,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   texture: {fileID: 0}
-  EmptyColor: {r: 0, g: 0, b: 0, a: 1}
-  WallColor: {r: 1, g: 0, b: 0, a: 1}
+  emptyColor: {r: 0, g: 0, b: 0, a: 1}
+  wallColor: {r: 1, g: 0, b: 0, a: 1}
   image: {fileID: 817046494}
 --- !u!1 &659318348
 GameObject:
@@ -2236,7 +2236,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 187105502}
         m_TargetAssemblyTypeName: MazeUIController, Assembly-CSharp
-        m_MethodName: onDrawMethodChanged
+        m_MethodName: OnDrawMethodChanged
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
