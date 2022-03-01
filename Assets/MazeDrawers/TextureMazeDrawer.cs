@@ -35,6 +35,9 @@ public class TextureMazeDrawer : MonoBehaviour, IMazeDrawer
    private int timeBetweenUpdates = 1;
    private float currentTime= 0;
     private bool updated;
+
+    private int amountOfRowsPerFrame = 10;
+    private int currentRowCount = 0;
     private void Awake()
     {
         mazeController = FindObjectOfType<MazeAlgorithmController>();
@@ -90,9 +93,14 @@ public class TextureMazeDrawer : MonoBehaviour, IMazeDrawer
                     PlaceWall(x, y, Directions.West);
                 } 
                 updated = true;
-            }
 
-            yield return null;
+            }
+            currentRowCount++;
+            if (currentRowCount > amountOfRowsPerFrame)
+            {
+                currentRowCount = 0;
+                yield return null;
+            }
         }
         drawMazeCallback();
         image.texture = texture;
