@@ -77,7 +77,7 @@ public class TextureMazeDrawer : MonoBehaviour, IMazeDrawer
 
                 int yPixel = y * 2 + 1;
 
-                int i = yPixel + (texture.width * xPixel);
+                int i = xPixel + (width * yPixel);
                 ColorBuffer[i] = EmptyColor;
                 PlaceWall(x, y, Directions.North);
                 PlaceWall(x, y, Directions.East);
@@ -90,7 +90,7 @@ public class TextureMazeDrawer : MonoBehaviour, IMazeDrawer
                 if (x == 0)
                 {
                     PlaceWall(x, y, Directions.West);
-                }
+                } 
                 updated = true;
             }
 
@@ -165,7 +165,7 @@ public class TextureMazeDrawer : MonoBehaviour, IMazeDrawer
             yPixel = y * 2 + 1;
         }
 
-        int i = yPixel + (width * xPixel);
+        int i = xPixel + (width * yPixel);
         ColorBuffer[i] = EmptyColor;
         updated = true;
 
@@ -201,8 +201,8 @@ public class TextureMazeDrawer : MonoBehaviour, IMazeDrawer
             yPixel = y * 2 + 1;
         }
 
-       int i = yPixel + (texture.width * xPixel);
-     //   Debug.Log("xPixel: " + xPixel + " YPixel: " + yPixel + " i: " + i);
+       int i = xPixel + (width * yPixel);
+        Debug.Log("xPixel: " + xPixel + " YPixel: " + yPixel + " i: " + i);
         ColorBuffer[i] = WallColor;
 
 
