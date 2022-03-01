@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public class MazeDrawer : MonoBehaviour
+public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
 {
 
 
@@ -32,10 +32,9 @@ public class MazeDrawer : MonoBehaviour
     Vector3 VerticalScale = new Vector3(1.5f, 1, 0.5f);
     Vector3 HorizontalScale = new Vector3(0.5f, 1, 1.5f);
 
-    private ComputeBuffer meshPropertiesBuffer;
-    private ComputeBuffer argsBuffer;
+    private MazeUIController.DrawMazeCallback callback;
 
-
+    private bool drawn = false;
     private struct MeshProperties
     {
         public Matrix4x4 mat;
@@ -53,37 +52,33 @@ public class MazeDrawer : MonoBehaviour
     private void Start()
     {
         recursiveBacktracker = GetComponent<RecursiveBacktracker>();
-        matrices = new Matrix4x4[((recursiveBacktracker.mazeXSize * recursiveBacktracker.mazeYSize * 4) / 1023) + 1][];
-        sideWallMatrices = new Matrix4x4[recursiveBacktracker.mazeXSize + recursiveBacktracker.mazeYSize];
-        for (int i = 0; i < matrices.Length; i++)
-        {
-            matrices[i] = new Matrix4x4[1023];
-        }
-
-
-
-        StartCoroutine(SpawnAllWalls());
+       
     }
+
+
 
     private void Update()
     {
 
 
-
-        int currentRenderPos = 0;
-
-        int currentRenderCount = population;
-        // possible Performance improvement: Using custom shaders and DrawMeshInstancedIndirect for bigger batches at once (Current limit is 1023 meshes)
-        // Could also try creating walls as one mesh instead
-        while (currentRenderCount > 1023)
+        if (drawn)
         {
-            Graphics.DrawMeshInstanced(mesh, 0, material, matrices[currentRenderPos], 1023, block);
-            currentRenderCount -= 1023;
-            currentRenderPos += 1;
-        }
-        Graphics.DrawMeshInstanced(mesh, 0, material, matrices[currentRenderPos], currentRenderCount, block);
+            int currentRenderPos = 0;
 
-        Graphics.DrawMeshInstanced(mesh, 0, material, sideWallMatrices, sideWallCount, block);
+            int currentRenderCount = population;
+            // possible Performance improvement: Using custom shaders and DrawMeshInstancedIndirect for bigger batches at once (Current limit is 1023 meshes)
+            // Could also try creating walls as one mesh instead
+            while (currentRenderCount > 1023)
+            {
+                Graphics.DrawMeshInstanced(mesh, 0, material, matrices[currentRenderPos], 1023, block);
+                currentRenderCount -= 1023;
+                currentRenderPos += 1;
+            }
+            Graphics.DrawMeshInstanced(mesh, 0, material, matrices[currentRenderPos], currentRenderCount, block);
+
+            Graphics.DrawMeshInstanced(mesh, 0, material, sideWallMatrices, sideWallCount, block);
+
+        }
 
 
 
@@ -147,6 +142,7 @@ public class MazeDrawer : MonoBehaviour
             }
             yield return null;
         }
+        callback();
 
         yield return null;
     }
@@ -201,5 +197,23 @@ public class MazeDrawer : MonoBehaviour
         matrices[instanceIndex][index % 1023] = mat;
     }
 
+    public void DrawMaze()
+    {
+        matrices = new Matrix4x4[((recursiveBacktracker.mazeXSize * recursiveBacktracker.mazeYSize * 4) / 1023) + 1][];
+        sideWallMatrices = new Matrix4x4[recursiveBacktracker.mazeXSize + recursiveBacktracker.mazeYSize];
+        for (int i = 0; i < matrices.Length; i++)
+        {
+            matrices[i] = new Matrix4x4[1023];
+        }
+        population = 0;
+        sideWallCount = 0;
+        drawn = true;
+        StartCoroutine(SpawnAllWalls());
+    }
 
+    public void DrawMaze(MazeUIController.DrawMazeCallback drawMazeCallback)
+    {
+        callback = drawMazeCallback;
+        DrawMaze();
+    }
 }

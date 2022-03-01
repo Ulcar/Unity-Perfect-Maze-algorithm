@@ -1,9 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
-[RequireComponent(typeof(MazeDrawer))]
+[RequireComponent(typeof(CubeMazeDrawer))]
 public class RecursiveBacktracker : MonoBehaviour
 {
 
@@ -13,12 +14,12 @@ public class RecursiveBacktracker : MonoBehaviour
     [SerializeField]
     public int mazeXSize, mazeYSize;
 
-    //TODO: Change to Array with seperate size parameter so the algorithm can be used in c# jobs
+
     private List<MazeNode> VisitedNodes;
 
 
     [SerializeField]
-    private int seed;
+    public int seed;
 
     [SerializeField]
     private int StepsPerFrame = 5;
@@ -34,17 +35,35 @@ public class RecursiveBacktracker : MonoBehaviour
 
     public GetRandomCell NodeChooser;
 
-    private MazeDrawer mazeDrawer;
+    private CubeMazeDrawer mazeDrawer;
 
     private System.Random randomInstance;
+
+    private Thread thread;
+
+    private GenerationMethod method;
+
+    private GetRandomCell[] generationFunctions;
+
     void Start()
     {
-        mazeNodes = new MazeNode[mazeXSize, mazeYSize];
-        mazeDrawer = GetComponent<MazeDrawer>();
-        NodeChooser = ChooseRandomCellFromList;
+        mazeDrawer = GetComponent<CubeMazeDrawer>();
+        NodeChooser = ChooseLastCellFromList;
+        generationFunctions = new GetRandomCell[] { ChooseLastCellFromList, ChooseFirstCellFromList, ChooseMiddleCellFromList, ChooseRandomCellFromList };
        // RunGeneration();
     }
 
+    public void OnGenerationMethodChanged(int method) 
+    {
+
+
+        NodeChooser = generationFunctions[method];
+    }
+
+    public void OnThreadingModeChanged(GenerationMethod method) 
+    {
+        this.method = method;
+    }
 
     private MazeNode ChooseLastCellFromList(List<MazeNode> nodes) 
     {
@@ -69,6 +88,7 @@ public class RecursiveBacktracker : MonoBehaviour
 
     private void GenerateNodeData() 
     {
+        mazeNodes = new MazeNode[mazeXSize, mazeYSize];
         for (int x = 0; x < mazeXSize; x++) 
         {
             for (int y = 0; y < mazeYSize; y++) 
@@ -177,6 +197,65 @@ public class RecursiveBacktracker : MonoBehaviour
         return false;
     }
 
+    private void GrowingTreeThread(int seed)
+    {
+
+        VisitedNodes = new List<MazeNode>();
+
+        randomInstance = new System.Random(seed);
+
+
+        // add random starting cell
+        int randomx = randomInstance.Next(0, mazeXSize);
+        int randomY = randomInstance.Next(0, mazeYSize);
+        VisitedNodes.Add(mazeNodes[randomx, randomY]);
+        mazeNodes[randomx, randomY].savedX = randomx;
+        mazeNodes[randomx, randomY].savedY = randomY;
+
+
+
+        while (VisitedNodes.Count > 0)
+        {
+            currentSteps++;
+            if (currentSteps >= StepsPerFrame)
+            {
+                currentSteps = 0;
+            }
+
+            // choose cell based on selection Function
+            MazeNode currentNode = NodeChooser(VisitedNodes);
+
+            List<Func<MazeNode, bool>> randomDirectionFunction = new List<Func<MazeNode, bool>>() { CheckNorth, CheckSouth, CheckEast, CheckWest };
+            bool found = false;
+            while (randomDirectionFunction.Count > 0)
+            {
+                int direction = randomInstance.Next(0, randomDirectionFunction.Count);
+
+                if (randomDirectionFunction[direction](currentNode))
+                {
+                    found = true;
+                    break;
+                }
+                //If not possible to go to direction, try again and remove direction from possible chosen directions
+                randomDirectionFunction.RemoveAt(direction);
+            }
+
+
+
+
+            // no nodes found, removing current node and counting visited as true
+            if (!found)
+            {
+                VisitedNodes.Remove(currentNode);
+            }
+
+        }
+
+        generationFinished = true;
+
+
+    }
+
     private IEnumerator GrowingTree(int seed) 
     {
 
@@ -208,9 +287,9 @@ public class RecursiveBacktracker : MonoBehaviour
 
            List< Func<MazeNode, bool> > randomDirectionFunction = new List<Func<MazeNode, bool>>(){ CheckNorth, CheckSouth, CheckEast, CheckWest };
             bool found = false;
-            for (int i = 0; i < 4; i++) 
+            while(randomDirectionFunction.Count > 0)
             {
-               int direction =  randomInstance.Next(0, randomDirectionFunction.Count - 1);
+               int direction =  randomInstance.Next(0, randomDirectionFunction.Count);
 
                 if (randomDirectionFunction[direction](currentNode)) 
                 {
@@ -218,7 +297,6 @@ public class RecursiveBacktracker : MonoBehaviour
                     break;
                 }
                 //If not possible to go to direction, try again and remove direction from possible chosen directions
-                //FIXME: Possible small bias here (direction + 1 has a higher chance of appearing after this)
                 randomDirectionFunction.RemoveAt(direction);
             }
 
@@ -252,13 +330,40 @@ public class RecursiveBacktracker : MonoBehaviour
         }
     }
 
-    private void RunGeneration() 
+    public void RunGeneration() 
+    {
+        // run generation based on options
+
+        if (method == GenerationMethod.Couroutine) 
+        {
+            RunGenerationCoroutine();
+        }
+
+        if (method == GenerationMethod.MultiThreaded) 
+        {
+            RunGenerationThreaded();
+        }
+    }
+
+    private void RunGenerationCoroutine() 
     {
 
         GenerateNodeData();
         StartCoroutine(GrowingTree(seed));
     }
 
+    private void RunGenerationThreaded() 
+    {
+        GenerateNodeData();
+        GrowingTreeThread(seed);
+    }
+
+    private void StartThread() 
+    {
+        thread = new Thread(RunGenerationThreaded);
+
+        thread.Start();
+    }
 
 
     IEnumerator ShowMaze()  //Creates maze with borders as cubes
