@@ -17,7 +17,7 @@ public class MazeUIController : MonoBehaviour
     {
         MazeController = FindObjectOfType<RecursiveBacktracker>();
         drawers = new IMazeDrawer[] {FindObjectOfType<TextureMazeDrawer>(), FindObjectOfType<CubeMazeDrawer>(), null};
-        drawer = drawers[1];
+        drawer = drawers[0];
         MazeController.ChangeDrawer(drawer);
     }
 
@@ -44,10 +44,9 @@ public class MazeUIController : MonoBehaviour
 
     public void OnGenerateButtonPressed() 
     {
-
-       MazeController.savedXSize = MazeController.MazeXSize;
+        MazeController.StopGeneration();
+        MazeController.savedXSize = MazeController.MazeXSize;
        MazeController.savedYSize = MazeController.MazeYSize;
-
         drawer.DrawMaze(OnDrawMazeFinished);
         MazeController.generationFinished = false;
     }

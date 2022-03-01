@@ -202,6 +202,7 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
 
     public void DrawMaze(MazeUIController.DrawMazeCallback drawMazeCallback)
     {
+        StopAllCoroutines();
         callback = drawMazeCallback;
         DrawMaze();
     }

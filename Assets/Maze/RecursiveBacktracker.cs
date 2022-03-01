@@ -202,6 +202,20 @@ public class RecursiveBacktracker : MonoBehaviour
         return false;
     }
 
+    public void StopGeneration() 
+    {
+        StopAllCoroutines();
+
+        if (thread != null)
+        {
+            if (thread.IsAlive)
+            {
+                thread.Abort();
+            }
+
+
+        }
+    }
     private void GrowingTreeThread(int seed)
     {
 
@@ -326,7 +340,6 @@ public class RecursiveBacktracker : MonoBehaviour
     {
         // run generation based on options
 
-
         if (method == GenerationMethod.Couroutine) 
         {
             RunGenerationCoroutine();
@@ -353,15 +366,7 @@ public class RecursiveBacktracker : MonoBehaviour
 
     private void StartThread() 
     {
-        if (thread != null) 
-        {
-            if (thread.IsAlive) 
-            {
-                thread.Abort();
-            }
 
-     
-        }
 
         thread = new Thread(new ThreadStart(RunGenerationThreaded));
 
