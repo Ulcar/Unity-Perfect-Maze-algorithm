@@ -35,23 +35,7 @@ public class ResizeOnMouseWheel : MonoBehaviour, IPointerEnterHandler, IPointerE
         {
             ChangeZoom(scrollWheel);
         }
-        if (onObj && Input.GetMouseButtonDown(0))
-        {
-            MouseOrigin = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
-            ImageOrigin = transform.position;
-            dragStarted = true;
-        }
-
-        if (dragStarted && Input.GetMouseButton(0))
-        {
-            Vector3 newPos = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
-            transform.position = ImageOrigin + (newPos - MouseOrigin);
-        }
-
-        else
-        {
-            dragStarted = false;
-        }
+        CheckMouseInput();
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -78,6 +62,29 @@ public class ResizeOnMouseWheel : MonoBehaviour, IPointerEnterHandler, IPointerE
     #endregion
 
     #region Private Methods
+
+    private void CheckMouseInput() 
+    {
+        if (onObj && Input.GetMouseButtonDown(0))
+        {
+            MouseOrigin = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+            ImageOrigin = transform.position;
+            dragStarted = true;
+        }
+
+        if (dragStarted && Input.GetMouseButton(0))
+        {
+            Vector3 newPos = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+            transform.position = ImageOrigin + (newPos - MouseOrigin);
+        }
+
+        else
+        {
+            dragStarted = false;
+        }
+    }
+    
+    
     private void ChangeZoom(float scrollWheel)
     {
         float rate = 1 + zoomRate * Time.unscaledDeltaTime;

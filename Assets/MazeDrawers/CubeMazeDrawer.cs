@@ -15,16 +15,17 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
 
 
 
-    public GameObject wallPrefab;
+    public GameObject WallPrefab;
 
-    public MazeAlgorithmController recursiveBacktracker;
+    public MazeAlgorithmController RecursiveBacktracker;
 
     private bool MazeNeedsUpdate = false;
     private int population = 0;
 
     private int sideWallCount = 0;
     // Material to use for drawing the meshes.
-    public Material material;
+    [SerializeField]
+    private Material material;
 
     private Matrix4x4[][] matrices;
 
@@ -33,8 +34,8 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
 
     public Mesh mesh;
 
-    Vector3 VerticalScale = new Vector3(1.5f, 1, 0.5f);
-    Vector3 HorizontalScale = new Vector3(0.5f, 1, 1.5f);
+   private Vector3 verticalScale = new Vector3(1.5f, 1, 0.5f);
+   private Vector3 horizontalScale = new Vector3(0.5f, 1, 1.5f);
 
     private MazeUIController.DrawMazeCallback callback;
 
@@ -43,7 +44,7 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
 
     private void Start()
     {
-        recursiveBacktracker = FindObjectOfType<MazeAlgorithmController>();
+        RecursiveBacktracker = FindObjectOfType<MazeAlgorithmController>();
 
     }
     private void Update()
@@ -78,7 +79,7 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
         // find wall in one dimensional array
         int index = y;
 
-        index += x * recursiveBacktracker.savedYSize;
+        index += x * RecursiveBacktracker.savedYSize;
 
         index *= 2;
 
@@ -107,9 +108,9 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
 
 
 
-        for (int x = 0; x < recursiveBacktracker.savedXSize; x++)
+        for (int x = 0; x < RecursiveBacktracker.savedXSize; x++)
         {
-            for (int y = 0; y < recursiveBacktracker.savedYSize; y++)
+            for (int y = 0; y < RecursiveBacktracker.savedYSize; y++)
             {
 
                 PlaceWall(x, y, Directions.North, population);
@@ -141,7 +142,7 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
         Vector3 position = new Vector3(x, 0, y) + direction * 0.5f * -1;
 
 
-        Vector3 scale = (d == Directions.West) ? HorizontalScale : VerticalScale;
+        Vector3 scale = (d == Directions.West) ? horizontalScale : verticalScale;
 
         var mat = Matrix4x4.TRS(position, Quaternion.identity, scale);
 
@@ -150,7 +151,7 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
 
         if (y == 0)
         {
-            index = recursiveBacktracker.savedYSize + x;
+            index = RecursiveBacktracker.savedYSize + x;
         }
 
         if (x == 0 && y == 0)
@@ -175,7 +176,7 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
         Vector3 direction = (d == Directions.East) ? Vector3.right : Vector3.forward;
         Vector3 position = new Vector3(x, 0, y) + direction * 0.5f * 1;
 
-        Vector3 scale = (d == Directions.East) ? HorizontalScale : VerticalScale;
+        Vector3 scale = (d == Directions.East) ? horizontalScale : verticalScale;
 
         var mat = Matrix4x4.TRS(position, Quaternion.identity, scale);
 
@@ -186,8 +187,8 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
 
     public void DrawMaze()
     {
-        matrices = new Matrix4x4[((recursiveBacktracker.savedXSize * recursiveBacktracker.savedYSize * 4) / 1023) + 1][];
-        sideWallMatrices = new Matrix4x4[recursiveBacktracker.savedXSize + recursiveBacktracker.savedYSize];
+        matrices = new Matrix4x4[((RecursiveBacktracker.savedXSize * RecursiveBacktracker.savedYSize * 4) / 1023) + 1][];
+        sideWallMatrices = new Matrix4x4[RecursiveBacktracker.savedXSize + RecursiveBacktracker.savedYSize];
         for (int i = 0; i < matrices.Length; i++)
         {
             matrices[i] = new Matrix4x4[1023];

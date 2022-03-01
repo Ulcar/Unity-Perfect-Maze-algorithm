@@ -15,36 +15,29 @@ using UnityEngine.UI;
 public class TextureMazeDrawer : MonoBehaviour, IMazeDrawer
 {
 
-    private MazeAlgorithmController MazeController;
+    private MazeAlgorithmController mazeController;
 
     [SerializeField]
-    Texture2D texture;
+   private Texture2D texture;
 
     [SerializeField]
-    Color EmptyColor = Color.black;
+   private Color emptyColor = Color.black;
 
     [SerializeField]
-    Color WallColor = Color.red;
+   private Color wallColor = Color.red;
 
 
     [SerializeField]
-    RawImage image;
+   private RawImage image;
 
-
-
-    int width, height;
-
-    Color32[] ColorBuffer;
-
-
-    int timeBetweenUpdates = 1;
-    float currentTime= 0;
-
-
+   private int width, height;
+   private Color32[] colorBuffer;
+   private int timeBetweenUpdates = 1;
+   private float currentTime= 0;
     private bool updated;
     private void Awake()
     {
-        MazeController = FindObjectOfType<MazeAlgorithmController>();
+        mazeController = FindObjectOfType<MazeAlgorithmController>();
     }
 
     private void Update()
@@ -57,7 +50,7 @@ public class TextureMazeDrawer : MonoBehaviour, IMazeDrawer
             {
                 currentTime = 0;
                 updated = false;
-                texture.SetPixels32(ColorBuffer);
+                texture.SetPixels32(colorBuffer);
 
                 texture.Apply();
                 
@@ -68,14 +61,14 @@ public class TextureMazeDrawer : MonoBehaviour, IMazeDrawer
 
     private IEnumerator DrawMazeRoutine(MazeUIController.DrawMazeCallback drawMazeCallback) 
     {
-        texture = new Texture2D((MazeController.savedXSize + 1) * 2, (MazeController.savedYSize + 1) * 2);
+        texture = new Texture2D((mazeController.savedXSize + 1) * 2, (mazeController.savedYSize + 1) * 2);
         width = texture.width;
         height = texture.height;
-        ColorBuffer = new Color32[texture.width * texture.height];
+        colorBuffer = new Color32[texture.width * texture.height];
         // draw black pixels for centers, and white pixels for walls
-        for (int x = 0; x < MazeController.savedXSize; x++)
+        for (int x = 0; x < mazeController.savedXSize; x++)
         {
-            for (int y = 0; y < MazeController.savedYSize; y++)
+            for (int y = 0; y < mazeController.savedYSize; y++)
             {
 
                 int xPixel = x * 2 + 1;
@@ -83,7 +76,7 @@ public class TextureMazeDrawer : MonoBehaviour, IMazeDrawer
                 int yPixel = y * 2 + 1;
 
                 int i = xPixel + (width * yPixel);
-                ColorBuffer[i] = EmptyColor;
+                colorBuffer[i] = emptyColor;
                 PlaceWall(x, y, Directions.North);
                 PlaceWall(x, y, Directions.East);
                 //side walls
@@ -171,7 +164,7 @@ public class TextureMazeDrawer : MonoBehaviour, IMazeDrawer
         }
 
         int i = xPixel + (width * yPixel);
-        ColorBuffer[i] = EmptyColor;
+        colorBuffer[i] = emptyColor;
         updated = true;
 
     }
@@ -207,7 +200,7 @@ public class TextureMazeDrawer : MonoBehaviour, IMazeDrawer
         }
 
        int i = xPixel + (width * yPixel);
-        ColorBuffer[i] = WallColor;
+        colorBuffer[i] = wallColor;
 
 
     }

@@ -15,23 +15,18 @@ public class MazeAlgorithmController : MonoBehaviour
 
     private MazeNode[,] mazeNodes;
 
-    [SerializeField]
     public int MazeXSize, MazeYSize;
     public int savedXSize, savedYSize;
     private List<MazeNode> VisitedNodes;
 
-    [SerializeField]
     public int seed;
 
     [SerializeField]
-    private int StepsPerFrame = 5;
+    private int stepsPerFrame = 5;
 
     private int currentSteps = 0;
 
-    [SerializeField]
     public bool generationFinished;
-
-    private bool drawingStarted;
 
     public delegate MazeNode GetRandomCell(List<MazeNode> nodes);
 
@@ -227,7 +222,7 @@ public class MazeAlgorithmController : MonoBehaviour
         while (VisitedNodes.Count > 0)
         {
             currentSteps++;
-            if (currentSteps >= StepsPerFrame)
+            if (currentSteps >= stepsPerFrame)
             {
                 currentSteps = 0;
             }
@@ -270,7 +265,7 @@ public class MazeAlgorithmController : MonoBehaviour
         while (VisitedNodes.Count > 0)
         {
             currentSteps++;
-            if (currentSteps >= StepsPerFrame)
+            if (currentSteps >= stepsPerFrame)
             {
                 currentSteps = 0;
                 yield return null;

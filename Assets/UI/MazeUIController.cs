@@ -13,8 +13,6 @@ public class MazeUIController : MonoBehaviour
     private MazeAlgorithmController MazeController;
     private IMazeDrawer drawer;
     private bool generating = false;
-
-
     private IMazeDrawer[] drawers;
 
     public delegate void DrawMazeCallback();
@@ -35,7 +33,7 @@ public class MazeUIController : MonoBehaviour
         MazeController.OnThreadingModeChanged((GenerationMethod)change);
     }
 
-    public void onDrawMethodChanged(Int32 change) 
+    public void OnDrawMethodChanged(Int32 change) 
     {
 
         drawer.SetActive(false);
