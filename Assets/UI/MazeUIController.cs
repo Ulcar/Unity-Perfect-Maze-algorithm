@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class MazeUIController : MonoBehaviour
 {
-    private RecursiveBacktracker MazeController;
+    private MazeAlgorithmController MazeController;
     private IMazeDrawer drawer;
     private bool generating = false;
 
@@ -15,10 +15,12 @@ public class MazeUIController : MonoBehaviour
     public delegate void DrawMazeCallback();
     void Start()
     {
-        MazeController = FindObjectOfType<RecursiveBacktracker>();
-        drawers = new IMazeDrawer[] {FindObjectOfType<TextureMazeDrawer>(), FindObjectOfType<CubeMazeDrawer>(), null};
+        MazeController = FindObjectOfType<MazeAlgorithmController>();
+        drawers = new IMazeDrawer[] {FindObjectOfType<TextureMazeDrawer>(true), FindObjectOfType<CubeMazeDrawer>(true)};
         drawer = drawers[0];
         MazeController.ChangeDrawer(drawer);
+
+        OnGenerateButtonPressed();
     }
 
 

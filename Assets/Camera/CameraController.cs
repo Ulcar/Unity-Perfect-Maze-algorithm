@@ -7,19 +7,14 @@ public class CameraController : MonoBehaviour
 {
     // Start is called before the first frame update
 
-    RecursiveBacktracker mazeController;
+    MazeAlgorithmController mazeController;
 
     Camera camera;
     void Start()
     {
-        mazeController = FindObjectOfType<RecursiveBacktracker>();
+        mazeController = FindObjectOfType<MazeAlgorithmController>();
         camera = GetComponent<Camera>();
     }
-
-
-
-    private Vector3 Origin, Difference;
-
 
     public float mainSpeed = 10.0f;   // Regular speed
     public float shiftAdd = 25.0f;   // Amount to accelerate when shift is pressed
@@ -28,34 +23,14 @@ public class CameraController : MonoBehaviour
 
     private Vector3 lastMouse = new Vector3(255, 255, 255);  // kind of in the middle of the screen, rather than at the top (play)
     private float totalRun = 1.0f;
-
     private bool mouseWasDown = false;
 
-    private bool mouseDrag = false;
+
 
     void Update()
     {
         // Only handle camera angle when right clicking
 
-        if (Input.GetMouseButton(0))
-        {
-            Difference = camera.ScreenToWorldPoint(Input.mousePosition) - camera.transform.position;
-            if (mouseDrag == false)
-            {
-                mouseDrag = true;
-                Origin = camera.ScreenToWorldPoint(Input.mousePosition);
-            }
-        }
-
-        else 
-        {
-            mouseDrag = false;
-        }
-
-        if (mouseDrag) 
-        {
-            camera.transform.position = Origin - Difference;
-        }
 
         if (Input.GetMouseButton(1))
         {
@@ -127,7 +102,7 @@ public class CameraController : MonoBehaviour
         return p_Velocity;
     }
 
-    public void OnGenerate() 
+    public void OnGenerate()
     {
         CenterCameraOnMaze(camera, false);
     }
@@ -141,7 +116,7 @@ public class CameraController : MonoBehaviour
     ///                   adjusted to implement zoom-fit effect </param>
     /// <param name="ViewFromRandomDirecion"> if random viewing direction is chozen. </param>
     /// Source: https://gist.github.com/hkusoft/83ad16d71a7d7bcf12216ddf03804f25
-    private void CenterCameraOnMaze(Camera c, bool ViewFromRandomDirection = false) 
+    private void CenterCameraOnMaze(Camera c, bool ViewFromRandomDirection = false)
     {
         Bounds b = new Bounds(new Vector3(mazeController.savedXSize / 2, 0, mazeController.savedYSize / 2), new Vector3(mazeController.savedXSize, 0, mazeController.savedYSize));
         Debug.Log(b);

@@ -6,6 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
+
+/// <summary>
+/// Draws the maze in a 3D Representation
+/// </summary>
 public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
 {
 
@@ -13,7 +17,7 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
 
     public GameObject wallPrefab;
 
-    public RecursiveBacktracker recursiveBacktracker;
+    public MazeAlgorithmController recursiveBacktracker;
 
     private bool MazeNeedsUpdate = false;
     private int population = 0;
@@ -37,25 +41,19 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
     private bool drawn = false;
 
 
-
     private void Start()
     {
-        recursiveBacktracker = FindObjectOfType<RecursiveBacktracker>();
-       
+        recursiveBacktracker = FindObjectOfType<MazeAlgorithmController>();
+
     }
-
-
-
     private void Update()
     {
-
-
         if (drawn)
         {
             int currentRenderPos = 0;
 
             int currentRenderCount = population;
-            // possible Performance improvement: Using custom shaders and DrawMeshInstancedIndirect for bigger batches at once (Current limit is 1023 meshes)
+            // possible Performance improvement: Using custom shaders and DrawMeshInstancedIndirect for bigger batches at once (Current limit is 1023 meshes per batch)
             // Could also try creating walls as one mesh instead
             while (currentRenderCount > 1023)
             {
@@ -104,7 +102,7 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
     }
 
 
-    IEnumerator SpawnAllWalls() //Creates maze with borders as cubes
+    private IEnumerator SpawnAllWalls() //Creates maze with borders as cubes
     {
 
 
@@ -120,14 +118,14 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
                 population++;
                 //side walls
                 if (y == 0)
-                  {
-                       PlaceBottomWall(x, y, Directions.South);
-                  } 
+                {
+                    PlaceBottomWall(x, y, Directions.South);
+                }
 
-                  if (x == 0)
-                  {
-                      PlaceBottomWall(x, y, Directions.West);
-                  } 
+                if (x == 0)
+                {
+                    PlaceBottomWall(x, y, Directions.West);
+                }
             }
             yield return null;
         }
@@ -137,7 +135,7 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
     }
 
 
-    void PlaceBottomWall(int x, int y, Directions d)
+    private void PlaceBottomWall(int x, int y, Directions d)
     {
         Vector3 direction = (d == Directions.West) ? Vector3.right : Vector3.forward;
         Vector3 position = new Vector3(x, 0, y) + direction * 0.5f * -1;
@@ -150,12 +148,12 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
 
         int index = y;
 
-        if (y == 0) 
+        if (y == 0)
         {
             index = recursiveBacktracker.savedYSize + x;
         }
 
-        if (x == 0 && y == 0) 
+        if (x == 0 && y == 0)
         {
             index = 0;
         }
@@ -171,13 +169,13 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
     }
 
 
-    void PlaceWall(int x, int y, Directions d, int index) 
-    {                                                   
+    private void PlaceWall(int x, int y, Directions d, int index)
+    {
 
         Vector3 direction = (d == Directions.East) ? Vector3.right : Vector3.forward;
         Vector3 position = new Vector3(x, 0, y) + direction * 0.5f * 1;
 
-        Vector3 scale = (d == Directions.East) ? HorizontalScale: VerticalScale;
+        Vector3 scale = (d == Directions.East) ? HorizontalScale : VerticalScale;
 
         var mat = Matrix4x4.TRS(position, Quaternion.identity, scale);
 

@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-  public class MazeNode
-    {
+public class MazeNode
+{
     /// <summary>
     /// bitmask of walls
     /// </summary>
@@ -15,10 +15,10 @@ using System.Threading.Tasks;
     /// Saving X and Y positions in struct for easier access in algorithm
     /// </summary>
     public int savedX, savedY;
-    }
+}
 
 
-    public enum Directions
-    {
-        North = 0x01, South = 0x02, West = 0x04, East = 0x08
-    }
+public enum Directions
+{
+    North = 0x01, South = 0x02, West = 0x04, East = 0x08
+}

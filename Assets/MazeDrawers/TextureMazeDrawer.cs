@@ -6,10 +6,16 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+
+
+/// <summary>
+/// Draws the maze in a 2D representation, rendering the maze to a 2D texture. 
+/// This texture could in the future be used for a shader etc. 
+/// </summary>
 public class TextureMazeDrawer : MonoBehaviour, IMazeDrawer
 {
 
-    private RecursiveBacktracker MazeController;
+    private MazeAlgorithmController MazeController;
 
     [SerializeField]
     Texture2D texture;
@@ -36,9 +42,9 @@ public class TextureMazeDrawer : MonoBehaviour, IMazeDrawer
 
 
     private bool updated;
-    private void Start()
+    private void Awake()
     {
-        MazeController = FindObjectOfType<RecursiveBacktracker>();
+        MazeController = FindObjectOfType<MazeAlgorithmController>();
     }
 
     private void Update()
@@ -51,7 +57,6 @@ public class TextureMazeDrawer : MonoBehaviour, IMazeDrawer
             {
                 currentTime = 0;
                 updated = false;
-                Debug.Log("updating");
                 texture.SetPixels32(ColorBuffer);
 
                 texture.Apply();
@@ -202,7 +207,6 @@ public class TextureMazeDrawer : MonoBehaviour, IMazeDrawer
         }
 
        int i = xPixel + (width * yPixel);
-        Debug.Log("xPixel: " + xPixel + " YPixel: " + yPixel + " i: " + i);
         ColorBuffer[i] = WallColor;
 
 
