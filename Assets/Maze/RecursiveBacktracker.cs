@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 
-[RequireComponent(typeof(CubeMazeDrawer))]
 public class RecursiveBacktracker : MonoBehaviour
 {
 
@@ -12,7 +11,10 @@ public class RecursiveBacktracker : MonoBehaviour
 
 
     [SerializeField]
-    public int mazeXSize, mazeYSize;
+    public int MazeXSize, MazeYSize;
+
+    public int savedXSize, savedYSize;
+
 
 
     private List<MazeNode> VisitedNodes;
@@ -27,7 +29,7 @@ public class RecursiveBacktracker : MonoBehaviour
     private int currentSteps = 0;
 
     [SerializeField]
-    private bool generationFinished;
+    public bool generationFinished;
 
     private bool drawingStarted;
 
@@ -35,7 +37,7 @@ public class RecursiveBacktracker : MonoBehaviour
 
     public GetRandomCell NodeChooser;
 
-    private CubeMazeDrawer mazeDrawer;
+    private IMazeDrawer mazeDrawer;
 
     private System.Random randomInstance;
 
@@ -47,12 +49,15 @@ public class RecursiveBacktracker : MonoBehaviour
 
     void Start()
     {
-        mazeDrawer = GetComponent<CubeMazeDrawer>();
         NodeChooser = ChooseLastCellFromList;
         generationFunctions = new GetRandomCell[] { ChooseLastCellFromList, ChooseFirstCellFromList, ChooseMiddleCellFromList, ChooseRandomCellFromList };
        // RunGeneration();
     }
+    public void ChangeDrawer(IMazeDrawer drawer)
+    {
+        this.mazeDrawer = drawer;
 
+    }
     public void OnGenerationMethodChanged(int method) 
     {
 
@@ -88,10 +93,10 @@ public class RecursiveBacktracker : MonoBehaviour
 
     private void GenerateNodeData() 
     {
-        mazeNodes = new MazeNode[mazeXSize, mazeYSize];
-        for (int x = 0; x < mazeXSize; x++) 
+        mazeNodes = new MazeNode[savedXSize, savedYSize];
+        for (int x = 0; x < savedXSize; x++) 
         {
-            for (int y = 0; y < mazeYSize; y++) 
+            for (int y = 0; y < savedYSize; y++) 
             {
                 mazeNodes[x, y] = new MazeNode();
                 MazeNode currentNode = mazeNodes[x, y];
@@ -106,7 +111,7 @@ public class RecursiveBacktracker : MonoBehaviour
 
     private bool CheckNorth(MazeNode currentNode) 
     {
-        if (currentNode.savedY < mazeYSize - 1)
+        if (currentNode.savedY < savedYSize - 1)
         {
             MazeNode newNode = mazeNodes[currentNode.savedX, currentNode.savedY + 1];
             if (!newNode.visited)
@@ -154,7 +159,7 @@ public class RecursiveBacktracker : MonoBehaviour
 
     private bool CheckEast(MazeNode currentNode) 
     {
-        if (currentNode.savedX < mazeXSize - 1)
+        if (currentNode.savedX < savedXSize - 1)
         {
             MazeNode newNode = mazeNodes[currentNode.savedX + 1, currentNode.savedY];
             if (!newNode.visited)
@@ -206,8 +211,8 @@ public class RecursiveBacktracker : MonoBehaviour
 
 
         // add random starting cell
-        int randomx = randomInstance.Next(0, mazeXSize);
-        int randomY = randomInstance.Next(0, mazeYSize);
+        int randomx = randomInstance.Next(0, savedXSize);
+        int randomY = randomInstance.Next(0, savedYSize);
         VisitedNodes.Add(mazeNodes[randomx, randomY]);
         mazeNodes[randomx, randomY].savedX = randomx;
         mazeNodes[randomx, randomY].savedY = randomY;
@@ -265,8 +270,8 @@ public class RecursiveBacktracker : MonoBehaviour
 
 
         // add random starting cell
-        int randomx = randomInstance.Next(0, mazeXSize);
-        int randomY = randomInstance.Next(0, mazeYSize);
+        int randomx = randomInstance.Next(0, savedXSize);
+        int randomY = randomInstance.Next(0, savedYSize);
         VisitedNodes.Add(mazeNodes[randomx, randomY]);
         mazeNodes[randomx, randomY].savedX = randomx;
         mazeNodes[randomx, randomY].savedY = randomY;
@@ -317,22 +322,10 @@ public class RecursiveBacktracker : MonoBehaviour
 
 
 
-    private void Update()
-    {
-        if (generationFinished && !drawingStarted) 
-        {
-            drawingStarted = true;
-        }
-
-        if (Input.GetKeyDown(KeyCode.Space)) 
-        {
-            RunGeneration();
-        }
-    }
-
     public void RunGeneration() 
     {
         // run generation based on options
+
 
         if (method == GenerationMethod.Couroutine) 
         {
@@ -341,7 +334,7 @@ public class RecursiveBacktracker : MonoBehaviour
 
         if (method == GenerationMethod.MultiThreaded) 
         {
-            RunGenerationThreaded();
+            StartThread();
         }
     }
 
@@ -360,58 +353,23 @@ public class RecursiveBacktracker : MonoBehaviour
 
     private void StartThread() 
     {
-        thread = new Thread(RunGenerationThreaded);
+        if (thread != null) 
+        {
+            if (thread.IsAlive) 
+            {
+                thread.Abort();
+            }
 
+     
+        }
+
+        thread = new Thread(new ThreadStart(RunGenerationThreaded));
+
+
+
+        thread.IsBackground = true;
         thread.Start();
     }
 
 
-    IEnumerator ShowMaze()  //Creates maze with borders as cubes
-    {
-        GameObject VerticalBorder = GameObject.CreatePrimitive(PrimitiveType.Cube);  //vertically scaled cube for up and down borders
-        VerticalBorder.transform.localScale = new Vector3(1.5f, 1, 0.5f);
-
-        GameObject HorizontalBorder = GameObject.CreatePrimitive(PrimitiveType.Cube);//horizontally scaled cube for left and right borders
-        HorizontalBorder.transform.localScale = new Vector3(0.5f, 1, 1.5f);
-
-        for (int x = 0; x < mazeXSize; x++)
-        {
-            for (int y = 0; y < mazeYSize; y++)
-            {
-                if ((mazeNodes[x,y].Walls & (int)Directions.North) > 0)
-                {
-                    PlaceVerticalBorder(VerticalBorder, mazeNodes[x,y], Directions.North);
-                }
-                if ((mazeNodes[x, y].Walls & (int)Directions.South) > 0)
-                {
-                    PlaceVerticalBorder(VerticalBorder, mazeNodes[x, y], Directions.South);
-                }
-
-                if ((mazeNodes[x, y].Walls & (int)Directions.East) > 0)
-                {
-                    PlaceHorizontalBorder(HorizontalBorder, mazeNodes[x, y], Directions.East);
-                }
-                if ((mazeNodes[x, y].Walls & (int)Directions.West) > 0)
-                {
-                    PlaceHorizontalBorder(HorizontalBorder, mazeNodes[x, y], Directions.West);
-                }
-                yield return null;
-            }
-        }
-        GameObject.Destroy(VerticalBorder); //destroy source objects
-        GameObject.Destroy(HorizontalBorder);
-        yield return null;
-    }
-
-    void PlaceHorizontalBorder(GameObject border, MazeNode c, Directions d) //borders are put moved away from the point to suround it
-    {                                                   //upper border moved up, and lower border moved down along x axis
-       GameObject tmp =  Instantiate(border, new Vector3(c.savedX, 0, c.savedY) + Vector3.right * 0.5f * ((d == Directions.East) ? 1 : -1), Quaternion.identity);
-        tmp.name = "X = " + c.savedX + " Y: " + c.savedY + "Direction: " + d.ToString();
-    }
-
-    void PlaceVerticalBorder(GameObject border, MazeNode c, Directions d)
-    {                                                   //left border moved left, and right border moved right along z axis
-       GameObject tmp =  Instantiate(border, new Vector3(c.savedX, 0, c.savedY) + Vector3.forward * 0.5f * ((d == Directions.North) ? 1 : -1), Quaternion.identity);
-        tmp.name = "X = " + c.savedX + " Y: " + c.savedY + "Direction: " + d.ToString();
-    }
 }

@@ -12,4 +12,6 @@ using System.Threading.Tasks;
 
     void DrawMaze(MazeUIController.DrawMazeCallback drawMazeCallback);
 
+    void SetActive(bool value);
+
     }

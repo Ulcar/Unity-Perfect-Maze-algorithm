@@ -35,23 +35,12 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
     private MazeUIController.DrawMazeCallback callback;
 
     private bool drawn = false;
-    private struct MeshProperties
-    {
-        public Matrix4x4 mat;
-        public Vector4 color;
 
-        public static int Size()
-        {
-            return
-                sizeof(float) * 4 * 4 + // matrix;
-                sizeof(float) * 4;      // color;
-        }
-    }
 
 
     private void Start()
     {
-        recursiveBacktracker = GetComponent<RecursiveBacktracker>();
+        recursiveBacktracker = FindObjectOfType<RecursiveBacktracker>();
        
     }
 
@@ -91,7 +80,7 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
         // find wall in one dimensional array
         int index = y;
 
-        index += x * recursiveBacktracker.mazeYSize;
+        index += x * recursiveBacktracker.savedYSize;
 
         index *= 2;
 
@@ -120,9 +109,9 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
 
 
 
-        for (int x = 0; x < recursiveBacktracker.mazeXSize; x++)
+        for (int x = 0; x < recursiveBacktracker.savedXSize; x++)
         {
-            for (int y = 0; y < recursiveBacktracker.mazeYSize; y++)
+            for (int y = 0; y < recursiveBacktracker.savedYSize; y++)
             {
 
                 PlaceWall(x, y, Directions.North, population);
@@ -163,7 +152,7 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
 
         if (y == 0) 
         {
-            index = recursiveBacktracker.mazeYSize + x;
+            index = recursiveBacktracker.savedYSize + x;
         }
 
         if (x == 0 && y == 0) 
@@ -199,8 +188,8 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
 
     public void DrawMaze()
     {
-        matrices = new Matrix4x4[((recursiveBacktracker.mazeXSize * recursiveBacktracker.mazeYSize * 4) / 1023) + 1][];
-        sideWallMatrices = new Matrix4x4[recursiveBacktracker.mazeXSize + recursiveBacktracker.mazeYSize];
+        matrices = new Matrix4x4[((recursiveBacktracker.savedXSize * recursiveBacktracker.savedYSize * 4) / 1023) + 1][];
+        sideWallMatrices = new Matrix4x4[recursiveBacktracker.savedXSize + recursiveBacktracker.savedYSize];
         for (int i = 0; i < matrices.Length; i++)
         {
             matrices[i] = new Matrix4x4[1023];
@@ -215,5 +204,10 @@ public class CubeMazeDrawer : MonoBehaviour, IMazeDrawer
     {
         callback = drawMazeCallback;
         DrawMaze();
+    }
+
+    public void SetActive(bool value)
+    {
+        gameObject.SetActive(value);
     }
 }
