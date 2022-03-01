@@ -6,7 +6,9 @@ using UnityEngine;
 
 
 /// <summary>
-/// This class implements the 
+/// This class implements the algorithm for generating the maze.
+/// This class has multiple Generation methods built in, based on choosing which node to generate from each iteration
+/// Implements algorithm as described at https://weblog.jamisbuck.org/2011/1/27/maze-generation-growing-tree-algorithm
 /// </summary>
 public class MazeAlgorithmController : MonoBehaviour
 {

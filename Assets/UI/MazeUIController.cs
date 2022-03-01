@@ -3,6 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Controls the UI of the Maze Generator scene.
+/// From here the drawer and maze generator are called.
+/// Also handles when Generation and drawing should be excecuted. 
+/// </summary>
 public class MazeUIController : MonoBehaviour
 {
     private MazeAlgorithmController MazeController;

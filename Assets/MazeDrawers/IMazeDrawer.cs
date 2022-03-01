@@ -5,7 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 /// <summary>
-/// Interface to draw Maze with. 
+/// Interface to draw the Maze with.
+/// Implement this interface on any script you want to render mazes with.
 /// </summary>
 public interface IMazeDrawer
 {
